@@ -165,7 +165,7 @@ class PpkNet(object):
     self.layers['logits'] = logits
 
     flat_prob = tf.nn.softmax(logits, name='pred_prob')
-    self.layers['pred_prob']  = tf.reshape(flat_prob, [-1, num_step, 3]) # [bsize, num_step, num_chns]
+    self.layers['pred_prob']  = tf.reshape(flat_prob, [-1, num_step, 3]) # [bsize, num_step, 3]
     self.layers['pred_class'] = tf.argmax(self.layers['pred_prob'], 2, name='pred_class')
 
 
