@@ -1,6 +1,6 @@
 """
 Make training and validation set (in TFRecords)
-stream format: [aug_num].[idx].miniseed
+stream format: [aug_num].[idx].[chn].sac
 """
 import os, sys
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
