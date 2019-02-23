@@ -3,14 +3,14 @@ CNN Event Detection &amp; RNN Phase Picking (in Tensorflow)
   
 *tflib* defines genral methods in tensorflow  
 > tflib
->> layers
+>> layers  
 >> nn_model
   
 *seisnet* defines neural networks for seismic data processing  
 > seisnet
->> config
->> data_pipeline
->> models
+>> config  
+>> data_pipeline  
+>> models  
   
 *preprocess* contains scripts for making TFRecords files  
 > preprocess
