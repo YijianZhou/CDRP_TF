@@ -14,7 +14,7 @@ CNN Event Detection &amp; RNN Phase Picking (in Tensorflow)
   
 *preprocess* contains scripts for making TFRecords files  
 > preprocess
->> make_all
+>> make_all  
 >> mk_dataset
   
 run *train.py* to train the model 
