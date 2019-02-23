@@ -17,5 +17,11 @@ CNN Event Detection &amp; RNN Phase Picking (in Tensorflow)
 >> make_all  
 >> mk_dataset
   
-run *train.py* to train the model 
+run *train.py* to train the model  
 *picker.py* connect DetNet and PpkNet as a hybrid architecture for extracting seismic arrivals from continuous waveforms.
+```python
+# use CDRP model
+import picker
+picker = picker.CDRP_Picker(out_file, ckpt_dir)
+picker.pick(stream) # input obspy.stream
+```
