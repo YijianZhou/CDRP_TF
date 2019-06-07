@@ -76,8 +76,8 @@ class DetNet(object):
     self.label = tf.cond(self.is_training,
                    lambda:self.inputs[0]['label'], lambda:self.inputs[1]['label'])
     bsize = self.label.get_shape().as_list()[0]
-    pos_labels = self.label[0:bsize/2]
-    neg_labels = self.label[bsize/2:]
+    pos_labels = self.label[0:bsize//2]
+    neg_labels = self.label[bsize//2:]
     pred_class = self.layers['pred_class']
 
     # calc loss
