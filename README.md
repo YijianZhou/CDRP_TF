@@ -25,3 +25,6 @@ import picker
 picker = picker.CDRP_Picker(out_file, ckpt_dir)
 picker.pick(stream) # input obspy.stream
 ```
+
+Please reference:
+https://pubs.geoscienceworld.org/ssa/srl/article/90/3/1079/569837/hybrid-event-detection-and-phase-picking-algorithm
