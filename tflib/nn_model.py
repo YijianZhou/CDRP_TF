@@ -38,16 +38,16 @@ class BaseModel(object):
         train_writer = tf.summary.FileWriter(train_log, sess.graph)
         valid_writer = tf.summary.FileWriter(valid_log)
 
-        print 'Initialize variables'
+        print('Initialize variables')
         tf.local_variables_initializer().run()
         tf.global_variables_initializer().run()
         if resume: self.load(sess)
 
-        print 'Starting data threads coordinator.'
+        print('Starting data threads coordinator.')
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-        print 'Starting optimization.'
+        print('Starting optimization.')
         start_time = time.time()
         step=0
 
@@ -64,38 +64,38 @@ class BaseModel(object):
                 # validition
                 valid_step = sess.run(self._valid_summary(), 
                                       feed_dict={self.model.is_training: False})
-                print 'Step {} | {:.0f}s | train acc. = {:.1f}% | valid acc. = {:.1f}%'\
-                      .format(step, time.time()-start_time,
-                              100*train_step['accuracy'], 100*valid_step['accuracy'])
+                print('Step {} | {:.0f}s | train acc. = {:.1f}% | valid acc. = {:.1f}%'\
+                    .format(step, time.time()-start_time,
+                            100*train_step['accuracy'], 100*valid_step['accuracy']))
                 # add summary
                 train_writer.add_summary(train_step['summary'], global_step=step)
                 valid_writer.add_summary(valid_step['summary'], global_step=step)
             if  step+1 % ckpt_step == 0:
-                print 'Saving Checkpoint {}th step'.format(step)
+                print('Saving Checkpoint {}th step'.format(step))
                 self.save(sess)
 
         except KeyboardInterrupt:
-            print 'Interrupted training at step {}.'.format(step)
+            print('Interrupted training at step {}.'.format(step))
             self.save(sess)
             train_writer.close()
             valid_writer.close()
 
         except tf.errors.OutOfRangeError:
-            print 'Training completed at step {}.'.format(step)
+            print('Training completed at step {}.'.format(step))
             self.save(sess)
             train_writer.close()
             valid_writer.close()
 
         finally:
-            print 'Shutting down data threads.'
+            print('Shutting down data threads.')
             coord.request_stop()
             train_writer.close()
             valid_writer.close()
 
         # Wait for data threads
-        print 'Waiting for all threads.'
+        print('Waiting for all threads.')
         coord.join(threads)
-        print 'Optimization done.'
+        print('Optimization done.')
 
 
   def load(self, sess, step=None):
@@ -107,13 +107,13 @@ class BaseModel(object):
         ckpt_path = os.path.join(self.model.ckpt_dir, 'model-'+str(step))
     self.saver.restore(sess, ckpt_path)
     step = tf.train.global_step(sess, self.gstep)
-    print 'Load model at step {} from check point {}.'.format(step, ckpt_path)
+    print('Load model at step {} from check point {}.'.format(step, ckpt_path))
 
 
   def save(self, sess):
     """ Save model in check points
     """
-    ckpt_path = os.path.join(self.model.ckpt_dir, 'model')#TODO
+    ckpt_path = os.path.join(self.model.ckpt_dir, 'model')
     if not os.path.exists(self.model.ckpt_dir):
         os.makedirs(self.model.ckpt_dir)
     self.saver.save(sess, ckpt_path, global_step=self.gstep)
