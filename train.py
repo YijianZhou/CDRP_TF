@@ -53,7 +53,7 @@ def main(args):
     elif args.model=='PpkNet':
         step_len    = int(100*cfg.step_len)
         step_stride = int(100*cfg.step_stride)
-        num_steps   = -(step_len/step_stride-1) + win_points_len/step_stride
+        num_steps   = int(-(step_len/step_stride-1) + win_points_len/step_stride)
         data_shape = [cfg.rnn_bsize, num_steps, step_len, cfg.num_chns]
     else: print('false model name!')
 
