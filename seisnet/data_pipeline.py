@@ -54,7 +54,7 @@ class Reader(object):
     fnames = glob.glob(data_paths)
     fname_q = tf.train.string_input_producer(fnames,
                                              shuffle = True,
-                                             num_epochs = None) #TODO
+                                             num_epochs = None)
     _, serial_eg = tf.TFRecordReader().read(fname_q)
     features = tf.parse_single_example(
                  serial_eg,

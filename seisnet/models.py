@@ -2,24 +2,25 @@
 """
 import os, sys
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
-sys.path.append('/home/zhouyj/Documents/CDRP_TF')
-
+sys.path.append('/home/zhouyj/software/CDRP_TF')
 import numpy as np
 import tensorflow as tf
 # import model
-import config
+import seisnet.config as config
 import tflib.layers as layers
 from tflib.nn_model import BaseModel
 
 
-# CNN for Earthquake Detection
 class DetNet(object):
+
+  """ CNN for Earthquake Detection
+  """
 
   def __init__(self, inputs, ckpt_dir):
     self.is_training = tf.placeholder(tf.bool, shape=())
     self.inputs = inputs
     self.data = tf.cond(self.is_training, 
-                  lambda:self.inputs[0]['data'], lambda:self.inputs[1]['data'])
+        lambda:self.inputs[0]['data'], lambda:self.inputs[1]['data'])
     self.ckpt_dir = ckpt_dir
     self.layers   = {}
 
@@ -97,9 +98,9 @@ class DetNet(object):
     with tf.name_scope('accuracy'):
         correct_pred = tf.equal(labels, pred_class)
         self.accuracy = tf.reduce_mean(tf.to_float(correct_pred))
-        correct_pos = tf.equal(pos_labels, pred_class[0:bsize/2])
+        correct_pos = tf.equal(pos_labels, pred_class[0:bsize//2])
         self.pos_acc = tf.reduce_mean(tf.to_float(correct_pos))
-        correct_neg = tf.equal(neg_labels, pred_class[bsize/2:])
+        correct_neg = tf.equal(neg_labels, pred_class[bsize//2:])
         self.neg_acc = tf.reduce_mean(tf.to_float(correct_neg))
 
     # add summary
@@ -196,10 +197,10 @@ class PpkNet(object):
 
   def _setup_optimizer(self, learning_rate, global_step):
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    if  update_ops:
-        updates = tf.group(*update_ops, name='update_ops')
-        with tf.control_dependencies([updates]):
-            self.loss = tf.identity(self.loss)
+    if update_ops:
+       updates = tf.group(*update_ops, name='update_ops')
+       with tf.control_dependencies([updates]):
+           self.loss = tf.identity(self.loss)
     optim = tf.train.AdamOptimizer(learning_rate)
     self.optimizer = optim.minimize(self.loss,
                                     name = 'optimizer',
