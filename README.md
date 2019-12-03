@@ -26,4 +26,5 @@ picker = picker.CDRP_Picker(out_file, ckpt_dir)
 picker.pick(stream) # input obspy.stream
 ```
 
+stable for Tensorflow 1.13.1 + Python 3.6.7
 Please reference: https://doi.org/10.1785/0220180319
