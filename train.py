@@ -55,7 +55,7 @@ def main(args):
         step_stride = int(100*cfg.step_stride)
         num_steps   = -(step_len/step_stride-1) + win_points_len/step_stride
         data_shape = [cfg.rnn_bsize, num_steps, step_len, cfg.num_chns]
-    else: print 'false model name!'
+    else: print('false model name!')
 
     # get training and validation set
     if   args.model=='DetNet':
@@ -83,9 +83,9 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str,
                         help = 'which model to train')
     parser.add_argument('--data_dir', type=str,
-                        default='/home/zhouyj/Documents/CDRP_TF/data/tmp')
+                        default='/home/zhouyj/software/CDRP_TF/data/tmp')
     parser.add_argument('--ckpt_dir', type=str,
-                        default='/home/zhouyj/Documents/CDRP_TF/output/tmp')
+                        default='/home/zhouyj/software/CDRP_TF/output/tmp')
     parser.add_argument('--resume', default=False)
     args = parser.parse_args()
     main(args)

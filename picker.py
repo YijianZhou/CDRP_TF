@@ -10,7 +10,7 @@ sys.path.append('/home/zhouyj/Documents/CDRP_TF/')
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import numpy as np
 import tensorflow as tf
-from obspy.core import *
+from obspy import read, UTCDateTime
 # import model
 import seisnet.models as models
 import seisnet.config as config
@@ -20,7 +20,7 @@ from tflib.nn_model import BaseModel
 class CDRP_Picker(object):
 
   def __init__(self, out_file,
-               ckpt_dir = '/home/zhouyj/Documents/CDRP_TF/output/tmp',
+               ckpt_dir = '/home/zhouyj/software/CDRP_TF/output/tmp',
                cnn_ckpt_step = None,
                rnn_ckpt_step = None):
 
@@ -52,15 +52,14 @@ class CDRP_Picker(object):
     """
 
     # check stream data
-    if len(stream)!=3:
-        print 'missing trace!'; return []#TODO
+    if len(stream)!=3: print('missing trace!'); return []
     # get header info
     hd0 = stream[0].stats
     hd1 = stream[1].stats
     hd2 = stream[2].stats
     start_time = max(hd0.starttime, hd1.starttime, hd2.starttime)
     end_time   = min(hd0.endtime,   hd1.endtime,   hd2.endtime)
-    if end_time < start_time + self.win_len/100: return  []#TODO
+    if end_time < start_time + self.win_len/100: return  []
     # make time sequence
     num_win = int((end_time - start_time) /self.win_len/2) -1
     time_seq = np.arange(0,num_win*self.win_len, self.win_len)
@@ -95,12 +94,12 @@ class CDRP_Picker(object):
             if is_event:
                 num_events += 1
                 det_list.append([t0, t1, pred_prob[0][1]])
-                print 'detected events: {} to {} ({:.2f}%)'.\
-                    format(t0, t1, pred_prob[0][1]*100)
+                print('detected events: {} to {} ({:.2f}%)'.\
+                format(t0, t1, pred_prob[0][1]*100))
 
-    print "processed {} windows".format(len(time_seq))
-    print "DetNet Run time: ", time.time() - run_time_start
-    print "found {} events".format(num_events)
+    print("processed {} windows".format(len(time_seq)))
+    print("DetNet Run time: ", time.time() - run_time_start)
+    print("found {} events".format(num_events))
     tf.reset_default_graph()
     return det_list
 
@@ -156,14 +155,14 @@ class CDRP_Picker(object):
                     else:            ts = t0 + self.step_len + self.step_stride *(pred_s[0]-0.5)
                 else: ts = -1
                 
-                print 'picked phase time: tp={}, ts={}'.format(tp, ts)
+                print('picked phase time: tp={}, ts={}'.format(tp, ts))
                 self.out_file.write(unicode('{},{},{}\n'.\
                                     format(stream[0].stats.station, tp, ts)))
                 num_events += 1
                 old_t1 = t1 # if picked
     
-    print "Picked {} events".format(num_events)
-    print "PpkNet Run time: ", time.time() - run_time_start
+    print("Picked {} events".format(num_events))
+    print("PpkNet Run time: ", time.time() - run_time_start)
     tf.reset_default_graph()
     return
 
