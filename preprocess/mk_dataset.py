@@ -1,6 +1,6 @@
 """
 Make training and validation set (in TFRecords)
-stream format: [aug_num].[idx].[chn].sac
+stream format: [aug_num].[idx].miniseed
 """
 import os, sys
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
@@ -134,19 +134,17 @@ def main(args):
             # read stream
             st_paths = os.path.join(fdir, '{}.{}.*'.format(aug_idx, samp_idx))
             st_paths = sorted(glob.glob(st_paths))
-            if  len(st_paths)!=3:
-                print 'missing trace!'; continue
+            if  len(st_paths)!=3: print('missing trace!'); continue
             st  = read(st_paths[0])
             st += read(st_paths[1])
             st += read(st_paths[2])
 
             # drop bad data & preprocess
-            if  0. in st.max():
-                print 'brocken trace!'; continue
+            if  0. in st.max(): print('brocken trace!'); continue
             if  len(st[0].data) - win_len not in [-1,0,1] or\
                 len(st[1].data) - win_len not in [-1,0,1] or\
                 len(st[2].data) - win_len not in [-1,0,1]:
-                print 'missing data points!'; continue
+                print('missing data points!'); continue
             st = preprocess(st)
 
             # make data
