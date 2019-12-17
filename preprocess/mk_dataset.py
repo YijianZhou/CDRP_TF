@@ -4,11 +4,10 @@ stream format: [aug_num].[idx].miniseed
 """
 import os, sys
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
-sys.path.append('/home/zhouyj/Documents/CDRP_TF/')
-
+sys.path.append('/home/zhouyj/software/CDRP_TF/')
 import argparse, glob
 import numpy as np
-from obspy.core import read
+from obspy import read
 # import model
 import seisnet.data_pipeline as dp
 import seisnet.config as config
