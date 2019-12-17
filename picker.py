@@ -6,10 +6,11 @@ Inputs
   rnn_ckpt_step: step of checkpoint for PpkNet
 """
 import os, sys, glob, time
-sys.path.append('/home/zhouyj/Documents/CDRP_TF/')
+sys.path.append('/home/zhouyj/software/CDRP_TF/')
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import numpy as np
 import tensorflow as tf
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 from obspy import read, UTCDateTime
 # import model
 import seisnet.models as models

@@ -3,9 +3,10 @@ Train CDRP model
 """
 import os, sys, argparse
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
-sys.path.append('/home/zhouyj/Documents/CDRP_TF')
+sys.path.append('/home/zhouyj/software/CDRP_TF')
 import numpy as np
 import tensorflow as tf
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 # import model
 import seisnet.config as config
 import seisnet.data_pipeline as dp
