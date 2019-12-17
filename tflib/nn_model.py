@@ -2,6 +2,7 @@ import os, time
 import numpy as np
 import tensorflow as tf
 
+
 class BaseModel(object):
   """ Base model of Neural Network
   basic methods for BaseModel
