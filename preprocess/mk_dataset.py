@@ -14,7 +14,7 @@ import seisnet.config as config
 
 
 def preprocess(stream):
-    stream = stream.detrend('constant')
+    stream = stream.detrend('demean').detrend('linear').taper(max_percentage=0.05, max_length=10.)
     stream = stream.filter('highpass', freq=1.)
     return stream.normalize()
 
