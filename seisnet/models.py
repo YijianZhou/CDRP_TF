@@ -1,8 +1,9 @@
 """ Defination of models
 """
-import os, sys
-os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+import sys
 sys.path.append('/home/zhouyj/software/CDRP_TF')
+from tensorflow.python.util import deprecation
+deprecation._PRINT_DEPRECATION_WARNINGS = False
 import numpy as np
 import tensorflow as tf
 # import model
