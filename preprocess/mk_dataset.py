@@ -181,9 +181,6 @@ for stream_path in stream_paths:
 
 # write TFRrd file
 pool = mp.Pool(processes=10)
-#for out_path in tfr_dict:
-#    pool.apply_async(write_tfr, args=(out_path,))
 pool.map(write_tfr, list(tfr_dict.keys()))
 pool.close()
 pool.join()
-
