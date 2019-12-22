@@ -116,17 +116,11 @@ def write_tfr(out_path):
 
         # drop bad data & preprocess
         if  0. in st.max(): print('brocken trace!'); continue
-        if  len(st[0].data) - win_len not in [-1,0,1] or\
-            len(st[1].data) - win_len not in [-1,0,1] or\
-            len(st[2].data) - win_len not in [-1,0,1]:
-            print('missing data points!'); continue
         st = preprocess(st)
 
         # make data
-        xdata = np.float32(st[0].data)
-        ydata = np.float32(st[1].data)
-        zdata = np.float32(st[2].data)
-        st_data = np.array([xdata, ydata, zdata])
+        st_data = np.zeros([3,win_len], dtype=np.float32)
+        for i in range(3): st_data[i][0:len(st[i].data)] = st[i].data[0:win_len]
         # to time steps
         if samp_class=='sequence':
             time_steps = stream2steps(st_data, num_steps, step_len, step_stride)
@@ -150,9 +144,9 @@ def write_tfr(out_path):
 
 # setup configure
 cfg = config.Config()
-win_len     = cfg.win_len *100
-step_len    = cfg.step_len *100
-step_stride = cfg.step_stride *100
+win_len     = int(cfg.win_len*100)
+step_len    = int(cfg.step_len*100)
+step_stride = int(cfg.step_stride*100)
 num_steps   = int(-(step_len/step_stride-1) + win_len/step_stride)
 
 # config class --> out_dir
@@ -184,3 +178,4 @@ pool = mp.Pool(processes=10)
 pool.map(write_tfr, list(tfr_dict.keys()))
 pool.close()
 pool.join()
+
