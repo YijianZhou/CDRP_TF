@@ -1,6 +1,7 @@
 """
 Make training and validation set (in TFRecords)
-stream format: [aug_num].[idx].miniseed
+stream format: SAC
+name rule: [aug_num].[idx].chn
 """
 import os, sys
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
@@ -94,7 +95,7 @@ def get_class():
     return dset_class, samp_class, det_label
 
 
-# write TFRrd file
+# write TFR file
 def write_tfr(out_path):
     # define TFR writer
     writer = dp.Writer(out_path)
