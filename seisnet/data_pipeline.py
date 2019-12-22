@@ -13,7 +13,7 @@ class Writer(object):
   """
 
   def __init__(self, out_path):
-    self._writer = tf.python_io.TFRecordWriter(out_path)
+    self._writer = tf.io.TFRecordWriter(out_path)
 
   def write(self, data, det_label, ppk_label):
     """
