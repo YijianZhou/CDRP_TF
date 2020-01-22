@@ -185,11 +185,10 @@ class CDRP_Picker(object):
         time_steps[0, i, :, :] = np.transpose(current_step)
     return time_steps
 
-
+  
   def preprocess(self, stream):
-    """preprocess for CDRP model:
-        rmean + rtr + normalize"""
-    stream = stream.detrend('constant') # rmean + rtr in SAC
+    """preprocess for CDRP model
+    """
+    stream = stream.detrend('demean').detrend('linear').taper(max_percentage=0.05, max_length=5.)
     stream = stream.filter('highpass', freq=1.)
     return stream.normalize()
-
