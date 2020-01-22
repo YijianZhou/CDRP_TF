@@ -170,20 +170,17 @@ class CDRP_Picker(object):
 
   def fetch_data(self, stream, num_steps, step_len, step_stride):
 
-    # convert to numpy array
-    xdata = np.float32(stream[0].data)
-    ydata = np.float32(stream[1].data)
-    zdata = np.float32(stream[2].data)
-    st_data = np.array([xdata, ydata, zdata])
+    # get stream data
+    data_holder = np.zeros((1, num_steps, step_len, 3), dtype=np.float32)
+    st_data = np.array([trace.data for trace in stream], dtype=np.float32)
 
     # feed into time steps
-    time_steps = np.zeros((1, num_steps, step_len, 3), dtype=np.float32)
     for i in range(num_steps):
         idx_0 = i * step_stride
         idx_1 = idx_0 + step_len
         current_step = st_data[:, idx_0:idx_1]
-        time_steps[0, i, :, :] = np.transpose(current_step)
-    return time_steps
+        data_holder[0, i, :, :] = np.transpose(current_step)
+    return data_holder
 
   
   def preprocess(self, stream):
