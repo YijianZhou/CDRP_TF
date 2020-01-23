@@ -99,7 +99,7 @@ class CDRP_Picker(object):
                 format(t0, t1, pred_prob[0][1]*100))
 
     print("processed {} windows".format(len(time_seq)))
-    print("DetNet Run time: ", time.time() - run_time_start)
+    print("DetNet run time: {:.2f}".format(time.time() - run_time_start))
     print("found {} events".format(num_events))
     tf.reset_default_graph()
     return det_list
@@ -117,7 +117,7 @@ class CDRP_Picker(object):
                             shape = (1, self.num_steps, step_point_len, 3))}
         inputs = [inputs, inputs]
         model = models.PpkNet(inputs, self.rnn_ckpt_dir)
-        BaseModel(model).load(sess, self.cnn_ckpt_step)
+        BaseModel(model).load(sess, self.rnn_ckpt_step)
         to_fetch = model.layers['pred_class']
 
         run_time_start = time.time()
@@ -148,12 +148,12 @@ class CDRP_Picker(object):
                 pred_p = np.where(pred_class==1)[0]
                 pred_s = np.where(pred_class==2)[0]
                 if len(pred_p)>0:
-                    if pred_p[0]==0: tp = t0 + self.step_len/2
-                    else:            tp = t0 + self.step_len + self.step_stride *(pred_p[0]-0.5)
+                    tp = t0 + self.step_len/2 if pred_p[0]==0
+                    else t0 + self.step_len + self.step_stride * (pred_p[0]-0.5)
                 else: tp = -1
                 if len(pred_s)>0:
-                    if pred_s[0]==0: ts = t0 + self.step_len/2
-                    else:            ts = t0 + self.step_len + self.step_stride *(pred_s[0]-0.5)
+                    ts = t0 + self.step_len/2 if pred_s[0]==0
+                    else t0 + self.step_len + self.step_stride * (pred_s[0]-0.5)
                 else: ts = -1
                 
                 print('picked phase time: tp={}, ts={}'.format(tp, ts))
@@ -163,7 +163,7 @@ class CDRP_Picker(object):
                 old_t1 = t1 # if picked
     
     print("Picked {} events".format(num_events))
-    print("PpkNet Run time: ", time.time() - run_time_start)
+    print("PpkNet run time: {:.2f}"format(time.time() - run_time_start))
     tf.reset_default_graph()
     return
 
