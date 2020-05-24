@@ -62,7 +62,7 @@ class CDRP_Picker(object):
     end_time   = min(hd0.endtime,   hd1.endtime,   hd2.endtime)
     if end_time < start_time + self.win_len/100: return  []
     # make time sequence
-    num_win = int((end_time - start_time) /self.win_len/2) -1
+    num_win = int((end_time - start_time) /(self.win_len/2)) -1
     time_seq = np.arange(0,num_win*self.win_len, self.win_len)
 
     det_list=[]
