@@ -1,4 +1,4 @@
-""" Apply trained model as picker method
+""" CDRP picker for continuous data (stream)
 Inputs
   out_file: out_file = open('file_name', 'w')
   ckpt_dir: root dir for checkpoint
@@ -22,7 +22,7 @@ warnings.filterwarnings("ignore")
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.05)
 
-class CDRP_Picker(object):
+class CDRP_Picker_Stream(object):
 
   def __init__(self,
                cnn_ckpt_dir = '/home/zhouyj/software/CDRP_TF/output/tmp/DetNet',
