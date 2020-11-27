@@ -1,4 +1,4 @@
-""" Repick Gorkha events
+""" Repick events
 """
 import sys, os, glob, shutil
 sys.path.append('/home/zhouyj/software/CDRP_TF/')
@@ -41,15 +41,15 @@ def read_stream(stz_path):
     stream += read(st_paths[1])
     stream += read(st_paths[2])
     start_time = stream[0].stats.starttime
-    return stream.slice(start_time+event_win[0], start_time+event_win[1]), event_sta
+    return stream.slice(start_time+event_win[0], start_time+event_win[1]), event_sta, start_time+event_win[0]
 
 
-def write_pick(picks, name_list, fout):
+def write_pick(picks, head_list, fout):
     num_samp = len(picks)
     for i in range(num_samp):
         tp, ts = picks[i]
-        event_sta = name_list[i]
-        fout.write('{},{},{}\n'.format(event_sta, tp, ts))
+        event_sta, start_time = head_list[i]
+        fout.write('{},{},{}\n'.format(event_sta, start_time+tp, start_time+ts))
 
 
 num_samp = len(stz_paths)
@@ -69,10 +69,10 @@ for batch_idx in range(num_batch):
     pool.join()
     streams = [out[0] for out in outs.get()]
     if to_prep: streams = [preprocess(out[0], samp_rate, freq_band) for out in outs.get()]
-    name_list = [out[1] for out in outs.get()]
+    head_list = [out[1:3] for out in outs.get()]
 
     # run CDRP
     picks = picker.pick(streams)
-    write_pick(picks, name_list, fout)
+    write_pick(picks, head_list, fout)
 
 fout.close()
