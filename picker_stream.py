@@ -29,19 +29,21 @@ class CDRP_Picker_Stream(object):
                rnn_ckpt_dir = '/home/zhouyj/software/CDRP_TF/output/tmp/PpkNet',
                cnn_ckpt_step = None,
                rnn_ckpt_step = None):
-
     self.cnn_ckpt_dir = cnn_ckpt_dir
     self.rnn_ckpt_dir = rnn_ckpt_dir
     self.cnn_ckpt_step = cnn_ckpt_step
     self.rnn_ckpt_step = rnn_ckpt_step
     self.config = config.Config()
-    self.win_len = self.config.win_len # sec
-    self.step_len = self.config.step_len
-    self.step_stride = self.config.step_stride
-    self.num_steps = int(-(self.step_len/self.step_stride-1) +\
-                           self.win_len/self.step_stride)
     self.samp_rate = self.config.sampling_rate
     self.freq_band = self.config.freq_band
+    self.win_len = self.config.win_len # sec
+    self.win_len_npts = int(self.samp_rate*self.win_len)
+    self.step_len = self.config.step_len
+    self.step_len_npts = int(self.step_len * self.samp_rate)
+    self.step_stride = self.config.step_stride
+    self.step_stride_npts = int(self.step_stride * self.samp_rate)
+    self.num_steps = int(-(self.step_len/self.step_stride-1) +\
+                           self.win_len/self.step_stride)
 
 
   def pick(self, stream, out_file):
@@ -67,38 +69,33 @@ class CDRP_Picker_Stream(object):
     # make time sequence
     num_win = int((end_time - start_time) /self.win_len/2) -1
     time_seq = np.arange(0,num_win*self.win_len, self.win_len)
-
     det_list=[]
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         # import DetNet
-        win_len_npts = int(self.samp_rate*self.win_len)
         inputs = {'data': tf.placeholder(tf.float32,
-                            shape = (1, 1, win_len_npts, 3))}
+                            shape = (1, 1, self.win_len_npts, 3))}
         inputs = [inputs, inputs]
         model = models.DetNet(inputs, self.cnn_ckpt_dir)
         BaseModel(model).load(sess, self.cnn_ckpt_step)
         to_fetch = [model.layers['pred_class'],
-                     model.layers['pred_prob']]
-
+                    model.layers['pred_prob']]
         num_events = 0
         for dt in time_seq:
-
             # get time range
             t0 = start_time + dt
             t1 = t0 + self.win_len
             # run DetNet
-            st = self.preprocess(stream.slice(t0, t1))
-            feed_dict = {inputs[1]['data']: self.fetch_data(st, 1, win_len_npts, win_len_npts),
+            st = self.preprocess(stream.slice(t0, t1).copy())
+            feed_dict = {inputs[1]['data']: self.fetch_data(st, 
+                         1, self.win_len_npts, self.win_len_npts),
                          model.is_training: False}
             [pred_class, pred_prob] = sess.run(to_fetch, feed_dict)
-            
             is_event = pred_class[0] > 0
             if is_event:
                 num_events += 1
                 det_list.append([t0, t1, pred_prob[0][1]])
                 print('detected events: {} to {} ({:.2f}%)'.\
                 format(t0, t1, pred_prob[0][1]*100))
-
     print("processed {} windows".format(len(time_seq)))
     print("DetNet Run time: {:.2f}s".format(time.time() - run_time_start))
     print("found {} events".format(num_events))
@@ -113,19 +110,16 @@ class CDRP_Picker_Stream(object):
     if len(det_list)==0: return
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         # set up PpkNet model
-        step_point_len = int(100*self.step_len)
-        step_point_stride = int(100*self.step_stride)
         inputs = {'data': tf.placeholder(tf.float32,
-                            shape = (1, self.num_steps, step_point_len, 3))}
+                            shape = (1, self.num_steps, self.step_len_npts, 3))}
         inputs = [inputs, inputs]
         model = models.PpkNet(inputs, self.rnn_ckpt_dir)
         BaseModel(model).load(sess, self.rnn_ckpt_step)
         to_fetch = model.layers['pred_class']
-
+        # for all dets
         num_events=0
         old_t1 = det_list[0][0]
         for idx, det in enumerate(det_list):
-
             t0, t1, det_prob = det[0], det[1], det[2]
             # pick the time windows with P in first half
             # if (1) no consecutive picks
@@ -136,32 +130,29 @@ class CDRP_Picker_Stream(object):
               or (t1 > det_list[new_idx][0] \
                 and det_list[idx][2] < det_list[new_idx][2]): 
                 continue
-
             else:
                 # run PpkNet
-                st = self.preprocess(stream.slice(t0,t1))
+                st = self.preprocess(stream.slice(t0,t1).copy())
                 feed_dict = {inputs[1]['data']: self.fetch_data(st,
-                               self.num_steps, step_point_len, step_point_stride),
+                             self.num_steps, self.step_len_npts, self.step_stride_npts),
                              model.is_training: False}
                 pred_class = sess.run(to_fetch, feed_dict)[0]
-                
                 # decode to relative time (sec) to win_t0
                 pred_p = np.where(pred_class==1)[0]
-                pred_s = np.where(pred_class==2)[0]
                 if len(pred_p)>0:
                     if pred_p[0]==0: tp = t0 + self.step_len/2
-                    else:            tp = t0 + self.step_len + self.step_stride *(pred_p[0]-0.5)
+                    else: tp = t0 + self.step_len + self.step_stride*(pred_p[0]-0.5)
+                    pred_class[0:pred_p[0]] = 0
                 else: tp = -1
+                pred_s = np.where(pred_class==2)[0]
                 if len(pred_s)>0:
                     if pred_s[0]==0: ts = t0 + self.step_len/2
-                    else:            ts = t0 + self.step_len + self.step_stride *(pred_s[0]-0.5)
+                    else: ts = t0 + self.step_len + self.step_stride*(pred_s[0]-0.5)
                 else: ts = -1
-                
                 print('picked phase time: tp={}, ts={}'.format(tp, ts))
                 out_file.write('{},{},{}\n'.format(stream[0].stats.station, tp, ts))
                 num_events += 1
                 old_t1 = t1 # if picked
-    
     print("Picked {} events".format(num_events))
     print("PpkNet Run time: {:.2f}s".format(time.time() - run_time_start))
     tf.reset_default_graph()
@@ -169,15 +160,14 @@ class CDRP_Picker_Stream(object):
 
 
   def fetch_data(self, stream, num_steps, step_len, step_stride):
-
     # get stream data
     data_holder = np.zeros((1, num_steps, step_len, 3), dtype=np.float32)
     st_data = np.array([trace.data for trace in stream], dtype=np.float32)
-
     # feed into time steps
     for i in range(num_steps):
         idx_0 = i * step_stride
         idx_1 = idx_0 + step_len
+        if idx_1>st_data.shape[1]: continue
         current_step = st_data[:, idx_0:idx_1]
         data_holder[0, i, :, :] = np.transpose(current_step)
     return data_holder
