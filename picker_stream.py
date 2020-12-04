@@ -66,9 +66,8 @@ class CDRP_Picker_Stream(object):
     start_time = max([trace.stats.starttime for trace in stream])
     end_time = min([trace.stats.endtime for trace in stream])
     if end_time < start_time + self.win_len: return  []
-    # make time sequence
-    num_win = int((end_time - start_time) /self.win_len/2) -1
-    time_seq = np.arange(0,num_win*self.win_len, self.win_len)
+    # sliding window with half overlap
+    num_steps = int((end_time-start_time) / (self.win_len/2)) -1
     det_list=[]
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         # import DetNet
@@ -80,9 +79,9 @@ class CDRP_Picker_Stream(object):
         to_fetch = [model.layers['pred_class'],
                     model.layers['pred_prob']]
         num_events = 0
-        for dt in time_seq:
+        for step_idx in range(num_steps):
             # get time range
-            t0 = start_time + dt
+            t0 = start_time + step_idx*self.win_len/2
             t1 = t0 + self.win_len
             # run DetNet
             st = self.preprocess(stream.slice(t0, t1).copy())
@@ -96,7 +95,7 @@ class CDRP_Picker_Stream(object):
                 det_list.append([t0, t1, pred_prob[0][1]])
                 print('detected events: {} to {} ({:.2f}%)'.\
                 format(t0, t1, pred_prob[0][1]*100))
-    print("processed {} windows".format(len(time_seq)))
+    print("processed {} windows".format(num_steps))
     print("DetNet Run time: {:.2f}s".format(time.time() - run_time_start))
     print("found {} events".format(num_events))
     tf.reset_default_graph()
