@@ -22,7 +22,7 @@ cnn_ckpt_dir = '/home/zhouyj/Gorkha/run_cdrp/output/gorkha_det/DetNet'
 rnn_ckpt_dir = '/home/zhouyj/Gorkha/run_cdrp/output/rc_ppk/PpkNet'
 cnn_ckpt_step = 23000
 rnn_ckpt_step = 9500
-picker = picker.CDRP_Picker(cnn_ckpt_dir=cnn_ckpt_dir, rnn_ckpt_dir=rnn_ckpt_dir, 
+picker = picker.CDRP_Picker_Stream(cnn_ckpt_dir=cnn_ckpt_dir, rnn_ckpt_dir=rnn_ckpt_dir, 
     cnn_ckpt_step=cnn_ckpt_step, rnn_ckpt_step=rnn_ckpt_step)
 
 def pick_day(date):
